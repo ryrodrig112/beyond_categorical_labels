@@ -1,3 +1,1 @@
-import data
-import models
-import utils
+from .train import sayhi

@@ -1,1 +1,1 @@
-from .utils import Trainer, Model, ClsModel
+from .utils import Trainer, Model, ClsModel, RgrModel

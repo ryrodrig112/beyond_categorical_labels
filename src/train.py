@@ -1,6 +1,6 @@
-from utils.utils import Model, Trainer, ClsModel, RgrModel
+from src.utils import Model, Trainer, ClsModel, RgrModel
 from src.data import CIFAR10DLGetter, CIFAR10Extended
-from models import HighDimModel, CategoricalModel, BaselineModel
+from src.models import HighDimModel, CategoricalModel, BaselineModel
 import torch
 import torch.nn as nn
 from torchvision import models
@@ -13,6 +13,8 @@ from pathlib import Path
 import argparse
 import json
 
+def sayhi():
+    print("yay")
 def load_config_file(config_path):
     with open(config_path, 'r') as f:
         return json.load(f)
