@@ -1,0 +1,10 @@
+{
+  "label_type": "high_dim",
+  "model_name": "vgg11",
+  "latent_size": 64,
+  "lr": 0.001,
+  "optimizer_type": "sgd",
+  "batch_size": 16,
+  "num_classes": 10
+
+}

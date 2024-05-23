@@ -1,0 +1,1 @@
+from .data import CIFAR10Extended, CIFAR10DLGetter
