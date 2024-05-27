@@ -30,7 +30,7 @@ class Model:
     def count_parameters(self):
         return sum(p.numel() for p in self.network.parameters() if p.requires_grad)
 
-    def train_one_epoch(self, trainloader, batch_print_rate=0):
+    def train_one_epoch(self, trainloader, device, batch_print_rate=0):
         ...
 
 class RgrModel(Model):
@@ -67,6 +67,7 @@ class RgrModel(Model):
         return num_accurate, num_inaccurate
 
     def train_one_epoch(self, trainloader,
+                        device,
                         batch_print_rate=0,
                         summary_writer=None,
                         epoch=0,
@@ -85,6 +86,7 @@ class RgrModel(Model):
             self.optimizer.zero_grad() # zero the parameter gradients
             # get the inputs; data is a list of [inputs, high_dim_label, categorical_label]
             inputs, high_dim_labels, cat_labels = data
+            inputs, labels, cat_labels = inputs.to(device), labels.to(device), cat_labels.to(device)
             batch_size = len(inputs)
             yhat_rgr = self.forward(inputs) # forward pass
             yhat_cls = self.classify_predictions(yhat_rgr) # classify into predicted classes
@@ -178,7 +180,7 @@ class ClsModel(Model):
         num_inaccurate = yhat_cls.size(0) - num_accurate
         return num_accurate, num_inaccurate
 
-    def train_one_epoch(self, trainloader, batch_print_rate=0, summary_writer=None, epoch=0, writer=None):
+    def train_one_epoch(self, trainloader,device, batch_print_rate=0, summary_writer=None, epoch=0, writer=None):
         n_batches = len(trainloader)
         n_datapoints = len(trainloader.dataset)
         epoch_loss = 0.0
@@ -193,6 +195,7 @@ class ClsModel(Model):
             self.optimizer.zero_grad() # zero the parameter gradients
             # get the inputs; data is a list of [inputs, high_dim_label, categorical_label]
             inputs, labels = data
+            inputs, labels= inputs.to(device), labels.to(device)
             batch_size = len(inputs)
             logits = self.forward(inputs) # forward pass
             preds = torch.argmax(logits, dim=1) # classify into predicted classes

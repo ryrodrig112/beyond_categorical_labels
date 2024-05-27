@@ -130,6 +130,7 @@ def print_run_info(trainer, model_config, print_rate):
 
 
 def run_training(model_config_path, run_config_path):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model_config = load_config_file(model_config_path)
     run_config = load_config_file(run_config_path)
     num_trials = run_config.get("num_trials", 0)
@@ -147,7 +148,7 @@ def run_training(model_config_path, run_config_path):
             model, batch_size = config_model(model_config, high_dim_label_set)
             print_rate = int((len(train_loader)) * run_config["print_pct"])
             results_dir, model_dir = configure_logging(run_config, train_pct, trial)
-            trainer = Trainer(model, train_loader, val_loader, results_dir, model_save_dir=model_dir)
+            trainer = Trainer(model, train_loader, val_loader, results_dir, device, model_save_dir=model_dir)
             if run_config.get("model_load_path"):
                 trainer.load_model(run_config["model_load_path"])
 
