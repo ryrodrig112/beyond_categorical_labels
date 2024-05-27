@@ -128,6 +128,36 @@ def print_run_info(trainer, model_config, print_rate):
     print(f"Logging at {trainer.log_dir}")
     print()
 
+
+def run_training(model_config_path, run_config_path):
+    model_config = load_config_file(model_config_path)
+    run_config = load_config_file(run_config_path)
+    num_trials = run_config.get("num_trials", 0)
+
+    # Init model and data
+    train_pcts = run_config["train_pct"]
+    val_pct = run_config["val_pct"]
+
+    for train_pct in train_pcts:
+        print(f"Training with {100 * train_pct}% of training data")
+        for trial in range(num_trials):
+            print(f"Trial #{trial + 1}")
+            train_loader, val_loader, test_loader, high_dim_label_set = load_datasets(run_config, model_config,
+                                                                                      train_pct)
+            model, batch_size = config_model(model_config, high_dim_label_set)
+            print_rate = int((len(train_loader)) * run_config["print_pct"])
+            results_dir, model_dir = configure_logging(run_config, train_pct, trial)
+            trainer = Trainer(model, train_loader, val_loader, results_dir, model_save_dir=model_dir)
+            if run_config.get("model_load_path"):
+                trainer.load_model(run_config["model_load_path"])
+
+            print_run_info(trainer, model_config, print_rate)
+            print(f"Batches in training set: {len(train_loader)}")
+            print(f"Batches in validation set: {len(val_loader)}")
+            print(f"{len(val_loader.dataset)}")
+            # Run training
+            trainer.run_training(run_config["num_epochs"], batch_print_rate=print_rate)
+
 if __name__ == "__main__":
     # Load run and model configuration
     model_config_path = "../config/models/high_dim/vgg11_high_dim.json"
