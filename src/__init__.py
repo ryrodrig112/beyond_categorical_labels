@@ -1,1 +1,1 @@
-from .train import sayhi
+from .train import *
