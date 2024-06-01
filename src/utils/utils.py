@@ -132,7 +132,7 @@ class RgrModel(Model):
         with torch.no_grad():
             for i, data in enumerate(dataloader, 0):
                 inputs, high_dim_labels, cat_labels = data
-                inputs, labels, cat_labels = inputs.to(device), labels.to(device), cat_labels.to(device)
+                inputs, high_dim_labels, cat_labels = inputs.to(device), high_dim_labels.to(device), cat_labels.to(device)
                 yhat_rgr = self.forward(inputs)
                 batch_loss = self.loss_fn(yhat_rgr, high_dim_labels)
                 total_loss += batch_loss
