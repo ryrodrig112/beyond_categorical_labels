@@ -13,11 +13,12 @@ from pathlib import Path
 from src.data import CIFAR10Extended
 
 class Model:
-    def __init__(self, network: nn.Module,
+    def __init__(self, device, network: nn.Module,
                  optimizer: torch.optim.Optimizer,
                  loss_fn: nn.Module,
                  scheduler: torch.optim.lr_scheduler,
                  model_dir_suffix: str): # eventually this will get changed to load hyperparms
+        self.device = device
         self.network = network
         self.optimizer = optimizer
         self.scheduler = scheduler
@@ -34,21 +35,21 @@ class Model:
         ...
 
 class RgrModel(Model):
-    def __init__(self, network: nn.Module,
+    def __init__(self, device, network: nn.Module,
                  optimizer: torch.optim.Optimizer,
                  loss_fn: nn.Module,
                  scheduler: torch.optim.lr_scheduler,
                  high_dim_label_set,
-                 model_dir_suffix: str
+                 model_dir_suffix: str,
                  ):
-        super().__init__(network, optimizer, loss_fn, scheduler, model_dir_suffix
+        super().__init__(device, network, optimizer, loss_fn, scheduler, model_dir_suffix
                  )
         self.high_dim_label_set = torch.tensor(high_dim_label_set)
 
     def calc_loss_across_classes(self, yhat_regr):
         """Given a predicted output, and a tensor containing the high dim labels for all classes, find the
         high dimensional label the prediction is closest to prediction"""
-        losses = torch.zeros(yhat_regr.size(0), self.high_dim_label_set.size(0))
+        losses = torch.zeros(yhat_regr.size(0), self.high_dim_label_set.size(0)).to(self.device)
         for i, y_hat in enumerate(yhat_regr):
             for j, label in enumerate(self.high_dim_label_set):
                 loss = self.loss_fn(y_hat, label)
@@ -67,7 +68,6 @@ class RgrModel(Model):
         return num_accurate, num_inaccurate
 
     def train_one_epoch(self, trainloader,
-                        device,
                         batch_print_rate=0,
                         summary_writer=None,
                         epoch=0,
@@ -86,7 +86,7 @@ class RgrModel(Model):
             self.optimizer.zero_grad() # zero the parameter gradients
             # get the inputs; data is a list of [inputs, high_dim_label, categorical_label]
             inputs, high_dim_labels, cat_labels = data
-            inputs, labels, cat_labels = inputs.to(device), labels.to(device), cat_labels.to(device)
+            inputs, labels, cat_labels = inputs.to(self.device), labels.to(self.device), cat_labels.to(self.device)
             batch_size = len(inputs)
             yhat_rgr = self.forward(inputs) # forward pass
             yhat_cls = self.classify_predictions(yhat_rgr) # classify into predicted classes
@@ -144,13 +144,13 @@ class RgrModel(Model):
         return avg_loss, accuracy
 
 class ClsModel(Model):
-    def __init__(self, network: nn.Module,
+    def __init__(self, device, network: nn.Module,
                  optimizer: torch.optim.Optimizer,
                  loss_fn: nn.Module,
                  scheduler: torch.optim.lr_scheduler,
                  model_dir_suffix: str
                  ):
-        super().__init__(network, optimizer, loss_fn, scheduler, model_dir_suffix
+        super().__init__(device, network, optimizer, loss_fn, scheduler, model_dir_suffix
                  )
 
     def calc_cls_accuracy(self, yhat_cls: torch.Tensor, cat_label: torch.Tensor):
@@ -243,7 +243,6 @@ class Trainer:
                  trainloader: DataLoader,
                  valloader:DataLoader,
                  log_prefix: str,
-                 device='cpu',
                  model_save_dir='models'):
         if not hasattr(model, 'train_one_epoch'):
             raise ValueError("The provided model does not have a 'train_one_epoch' method.")
@@ -252,7 +251,6 @@ class Trainer:
         self.model = model
         self.trainloader = trainloader
         self.valloader = valloader
-        self.device = device
         self.model_save_dir = model_save_dir
         self.log_dir = f"{log_prefix}_{self.model.model_dir_suffix}"
         self.writer = SummaryWriter(self.log_dir)
@@ -262,7 +260,6 @@ class Trainer:
         for epoch in range(epochs):
             print(f"Beginning epoch {epoch + 1}")
             train_loss, train_accuracy = self.model.train_one_epoch(self.trainloader,
-                                                                    device=self.device,
                                                                     batch_print_rate=batch_print_rate)
             val_loss, val_accuracy = self.model.eval_performance(self.valloader, device=self.device)
             print(f"Epoch {epoch + 1}/{epochs}")

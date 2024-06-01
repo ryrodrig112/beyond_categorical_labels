@@ -39,7 +39,7 @@ def config_model(config: dict, high_dim_label_set):
 
     model_load_path = config.get("model_load_path", None)
     model_epoch_nm = config.get("epoch_number", 0)
-
+    device =  torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Init model based on label type
     if label_type == "high_dim":
