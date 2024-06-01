@@ -65,9 +65,9 @@ def config_model(config: dict, high_dim_label_set):
 
     model_dir_suffix = f"{model_name}_{label_type}"
     if label_type == "categorical":
-        model = ClsModel(network, optimizer, loss_fn, scheduler, model_dir_suffix)
+        model = ClsModel(device, network, optimizer, loss_fn, scheduler, model_dir_suffix)
     elif label_type == "high_dim":
-        model = RgrModel(network, optimizer, loss_fn,scheduler, high_dim_label_set, model_dir_suffix)
+        model = RgrModel(device, network, optimizer, loss_fn,scheduler, high_dim_label_set, model_dir_suffix)
 
     return model, batch_size
 
