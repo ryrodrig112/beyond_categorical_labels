@@ -129,7 +129,7 @@ def print_run_info(trainer, model_config, print_rate):
     print()
 
 
-def run_training(model_config_path, run_config_path):
+def run_training(model_config_path, run_config_path, validation):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model_config = load_config_file(model_config_path)
     run_config = load_config_file(run_config_path)
@@ -159,7 +159,7 @@ def run_training(model_config_path, run_config_path):
             print(f"Batches in validation set: {len(val_loader)}")
             print(f"{len(val_loader.dataset)}")
             # Run training
-            trainer.run_training(run_config["num_epochs"], batch_print_rate=print_rate)
+            trainer.run_training(run_config["num_epochs"], batch_print_rate=print_rate, validation=validation)
     return model, test_loader
 
 if __name__ == "__main__":

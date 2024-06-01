@@ -259,18 +259,19 @@ class Trainer:
         self.log_dir = f"{log_prefix}_{self.model.model_dir_suffix}"
         self.writer = SummaryWriter(self.log_dir)
 
-    def run_training(self, epochs, batch_print_rate=0):
+    def run_training(self, epochs, batch_print_rate=0, validation=True):
         print(f"batch print rate from run_training: {batch_print_rate}")
         for epoch in range(epochs):
             print(f"Beginning epoch {epoch + 1}")
             train_loss, train_accuracy = self.model.train_one_epoch(self.trainloader,
                                                                     batch_print_rate=batch_print_rate)
-            val_loss, val_accuracy = self.model.eval_performance(self.valloader)
+            if validation:
+                val_loss, val_accuracy = self.model.eval_performance(self.valloader)
+                self.writer.add_scalars('Loss', {'Train': train_loss, 'Validation': val_loss}, epoch)
+                self.writer.add_scalars('Accuracy', {'Train': train_accuracy, 'Validation': val_accuracy}, epoch)
             print(f"Epoch {epoch + 1}/{epochs}")
             print(f"Train Loss: {train_loss:.4f}, Validation Loss: {val_loss:.4f}")
             print(f"Train Accuracy: {100*train_accuracy:.2f}%, Validation Accuracy: {100*val_accuracy:.2f}%")
-            self.writer.add_scalars('Loss', {'Train': train_loss, 'Validation': val_loss}, epoch)
-            self.writer.add_scalars('Accuracy', {'Train': train_accuracy, 'Validation': val_accuracy}, epoch)
             self.save_model(epoch)
         print("Training Complete")
 
