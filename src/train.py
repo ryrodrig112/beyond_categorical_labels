@@ -165,7 +165,7 @@ def run_training(model_config_path, run_config_path, validation):
 if __name__ == "__main__":
     # Load run and model configuration
     model_config_path = "../config/models/high_dim/vgg11_high_dim.json"
-    run_config_path = "../config/data_constrained_highdim_run_params.json"
+    run_config_path = "../config/data_constrained_highdim_run_params_local.json"
     model_config = load_config_file(model_config_path)
     run_config = load_config_file(run_config_path)
     num_trials = run_config.get("num_trials", 0)
