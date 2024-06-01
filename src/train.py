@@ -153,14 +153,12 @@ def run_training(model_config_path, run_config_path):
                               train_loader,
                               val_loader,
                               results_dir,
-                              device=device,
                               model_save_dir=model_dir)
             print_run_info(trainer, model_config, print_rate)
             print(f"Batches in training set: {len(train_loader)}")
             print(f"Batches in validation set: {len(val_loader)}")
             print(f"{len(val_loader.dataset)}")
             # Run training
-            print(f"Trainer Device: {trainer.device}")
             # trainer.run_training(run_config["num_epochs"], batch_print_rate=print_rate)
     return model, test_loader
 
