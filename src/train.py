@@ -139,6 +139,9 @@ def run_training(model_config_path, run_config_path):
     train_pcts = run_config["train_pct"]
     val_pct = run_config["val_pct"]
 
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(device)
+
     for train_pct in train_pcts:
         print(f"Training with {100 * train_pct}% of training data")
         for trial in range(num_trials):
