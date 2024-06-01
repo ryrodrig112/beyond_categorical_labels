@@ -153,7 +153,7 @@ def run_training(model_config_path, run_config_path):
                               train_loader,
                               val_loader,
                               results_dir,
-                              device,
+                              device=device,
                               model_save_dir=model_dir)
             print_run_info(trainer, model_config, print_rate)
             print(f"Batches in training set: {len(train_loader)}")

@@ -91,28 +91,6 @@ class RgrModel(Model):
             yhat_rgr = self.forward(inputs) # forward pass
             yhat_cls = self.classify_predictions(yhat_rgr) # classify into predicted classes
 
-            # debugging stuff
-            # print("First high dim prediction")
-            # print(yhat_rgr[0])
-            # print("First high dim label")
-            # print(high_dim_labels[0])
-            # print("First categorical prediction")
-            # print(yhat_cls[0])
-            # print("First categorical label")
-            # print(cat_labels[0])
-            #
-            # print("Second high dim prediction")
-            # print(yhat_rgr[1])
-            # print("Second high dim label")
-            # print(high_dim_labels[1])
-            # print("Second categorical class")
-            # print(yhat_cls[1])
-            # print("Second categorical label")
-            # print(cat_labels[1])
-            # print(f"Sum of prediction labels: {sum(yhat_cls)}")
-            # print(f"Max of prediction labels: {max(yhat_cls)}")
-            # print(f"Min of prediction labels: {min(yhat_cls)}")
-
             #calculate loss & accuracy for batch, track for epoch
             loss = self.loss_fn(yhat_rgr, high_dim_labels)
             num_accurate, _ = self.calc_cls_accuracy(yhat_cls, cat_labels)
@@ -260,10 +238,11 @@ class ClsModel(Model):
 
 class Trainer:
     """Given any model with a train_one_epoch function, trains or evals model, strong results and plots"""
-    def __init__(self, model: Model,
+    def __init__(self,
+                 model: Model,
                  trainloader: DataLoader,
                  valloader:DataLoader,
-                 log_prefix:str,
+                 log_prefix: str,
                  device='cpu',
                  model_save_dir='models'):
         if not hasattr(model, 'train_one_epoch'):
