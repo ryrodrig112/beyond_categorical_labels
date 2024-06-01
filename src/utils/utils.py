@@ -52,7 +52,7 @@ class RgrModel(Model):
         losses = torch.zeros(yhat_regr.size(0), self.high_dim_label_set.size(0)).to(self.device)
         for i, y_hat in enumerate(yhat_regr):
             for j, label in enumerate(self.high_dim_label_set):
-                loss = self.loss_fn(y_hat, label)
+                loss = self.loss_fn(y_hat.to(self.device), label.to(self.device))
                 losses[i, j] = loss
         return losses
 
