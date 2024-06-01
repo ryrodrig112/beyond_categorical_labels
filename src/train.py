@@ -143,12 +143,19 @@ def run_training(model_config_path, run_config_path):
         print(f"Training with {100 * train_pct}% of training data")
         for trial in range(num_trials):
             print(f"Trial #{trial + 1}")
-            train_loader, val_loader, test_loader, high_dim_label_set = load_datasets(run_config, model_config,
+            train_loader, val_loader, test_loader, high_dim_label_set = load_datasets(run_config,
+                                                                                      model_config,
                                                                                       train_pct)
             model, batch_size = config_model(model_config, high_dim_label_set)
             print_rate = int((len(train_loader)) * run_config["print_pct"])
             results_dir, model_dir = configure_logging(run_config, train_pct, trial)
-            trainer = Trainer(model, train_loader, val_loader, results_dir, device, model_save_dir=model_dir)
+
+            trainer = Trainer(model,
+                              train_loader,
+                              val_loader,
+                              results_dir,
+                              device,
+                              model_save_dir=model_dir)
             if run_config.get("model_load_path"):
                 trainer.load_model(run_config["model_load_path"])
 
@@ -158,7 +165,7 @@ def run_training(model_config_path, run_config_path):
             print(f"{len(val_loader.dataset)}")
             # Run training
             print(f"Trainer Device: {trainer.device}")
-            trainer.run_training(run_config["num_epochs"], batch_print_rate=print_rate)
+            # trainer.run_training(run_config["num_epochs"], batch_print_rate=print_rate)
     return model, test_loader
 
 if __name__ == "__main__":
