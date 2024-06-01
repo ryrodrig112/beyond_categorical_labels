@@ -145,7 +145,7 @@ class RgrModel(Model):
         tr_accuracy = total_accurate / n_datapoints
         return average_tr_loss, tr_accuracy
 
-    def eval_performance(self, dataloader: DataLoader):
+    def eval_performance(self, dataloader: DataLoader, device):
         print("Evaluating")
         self.network.eval()
         total_accurate = 0
@@ -154,6 +154,7 @@ class RgrModel(Model):
         with torch.no_grad():
             for i, data in enumerate(dataloader, 0):
                 inputs, high_dim_labels, cat_labels = data
+                inputs, labels, cat_labels = inputs.to(device), labels.to(device), cat_labels.to(device)
                 yhat_rgr = self.forward(inputs)
                 batch_loss = self.loss_fn(yhat_rgr, high_dim_labels)
                 total_loss += batch_loss
@@ -180,7 +181,7 @@ class ClsModel(Model):
         num_inaccurate = yhat_cls.size(0) - num_accurate
         return num_accurate, num_inaccurate
 
-    def train_one_epoch(self, trainloader,device, batch_print_rate=0, summary_writer=None, epoch=0, writer=None):
+    def train_one_epoch(self, trainloader, device, batch_print_rate=0, summary_writer=None, epoch=0, writer=None):
         n_batches = len(trainloader)
         n_datapoints = len(trainloader.dataset)
         epoch_loss = 0.0
@@ -232,7 +233,7 @@ class ClsModel(Model):
         print(f"Avg Epoch Accuracy: {100*tr_accuracy:0.2f}%")
         return average_tr_loss, tr_accuracy
 
-    def eval_performance(self, dataloader: DataLoader):
+    def eval_performance(self, dataloader: DataLoader, device):
         total_accurate = 0
         total_loss = 0
         n_batches = len(dataloader)
@@ -241,6 +242,7 @@ class ClsModel(Model):
         for i, data in enumerate(dataloader, 0):
             # get the inputs; data is a list of [inputs, high_dim_label, categorical_label]
             inputs, labels = data
+            inputs, labels = inputs.to(device), labels.to(device)
             batch_size = len(inputs)
             logits = self.forward(inputs) # forward pass
             preds = torch.argmax(logits, dim=1) # classify into predicted classes
@@ -280,8 +282,8 @@ class Trainer:
         print(f"batch print rate from run_training: {batch_print_rate}")
         for epoch in range(epochs):
             print(f"Beginning epoch {epoch + 1}")
-            train_loss, train_accuracy = self.model.train_one_epoch(self.trainloader, batch_print_rate=batch_print_rate)
-            val_loss, val_accuracy = self.model.eval_performance(self.valloader)
+            train_loss, train_accuracy = self.model.train_one_epoch(self.trainloader, device=self.device, batch_print_rate=batch_print_rate)
+            val_loss, val_accuracy = self.model.eval_performance(self.valloader, device=self.device)
             print(f"Epoch {epoch + 1}/{epochs}")
             print(f"Train Loss: {train_loss:.4f}, Validation Loss: {val_loss:.4f}")
             print(f"Train Accuracy: {100*train_accuracy:.2f}%, Validation Accuracy: {100*val_accuracy:.2f}%")
