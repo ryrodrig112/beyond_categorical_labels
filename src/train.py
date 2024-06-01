@@ -159,7 +159,7 @@ def run_training(model_config_path, run_config_path):
             print(f"Batches in validation set: {len(val_loader)}")
             print(f"{len(val_loader.dataset)}")
             # Run training
-            # trainer.run_training(run_config["num_epochs"], batch_print_rate=print_rate)
+            trainer.run_training(run_config["num_epochs"], batch_print_rate=print_rate)
     return model, test_loader
 
 if __name__ == "__main__":
