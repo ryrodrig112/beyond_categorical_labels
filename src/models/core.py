@@ -1,5 +1,6 @@
 import torch.nn as nn
 import torchvision.models as models
+import torch
 
 
 class CnnFeatureExtractor(nn.Module):
@@ -15,8 +16,10 @@ class CnnFeatureExtractor(nn.Module):
             base_model = models.vgg19_bn()
         self.layers = nn.Sequential(*list(base_model.children())[:-1])
         self.out_features = base_model.classifier[0].in_features
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     def forward(self, x):
+        self.layers.to(self.device)
         h = self.layers(x)
         h = h.flatten(start_dim=1)
         return h
@@ -24,6 +27,7 @@ class CnnFeatureExtractor(nn.Module):
 class DeconvDecoder(nn.Module):
     def __init__(self, input_size):
         super().__init__()
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.layers = nn.Sequential(
             nn.ConvTranspose2d(input_size, 64, 4, 1, 0),
             nn.BatchNorm2d(64),
@@ -45,6 +49,7 @@ class DeconvDecoder(nn.Module):
         )
 
     def forward(self, x):
+        self.layers.to(self.device)
         x = x.view(x.size(0), x.size(1), 1, 1) # from [batch, features] to [batch, features, 1, 1]
         y_hat = self.layers(x)
         return y_hat
@@ -52,10 +57,12 @@ class DeconvDecoder(nn.Module):
 class HighDimModel(nn.Module):
     def __init__(self, model_name: nn.Module, latent_size: int, num_classes: int):
         super().__init__()
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.cnn = CnnFeatureExtractor(model_name, num_classes) #extracts features from input image
         self.fc = nn.Sequential(nn.BatchNorm1d(self.cnn.out_features), # turn features into 1d latent representation
                                 nn.LeakyReLU(),
                                 nn.Linear(self.cnn.out_features, latent_size))
+        self.fc.to(self.device)
         self.decoder = DeconvDecoder(latent_size)
         self.model_name = f"{model_name}_highdim"
         self.num_classes = num_classes
