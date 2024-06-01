@@ -86,7 +86,7 @@ class RgrModel(Model):
             self.optimizer.zero_grad() # zero the parameter gradients
             # get the inputs; data is a list of [inputs, high_dim_label, categorical_label]
             inputs, high_dim_labels, cat_labels = data
-            inputs, labels, cat_labels = inputs.to(self.device), labels.to(self.device), cat_labels.to(self.device)
+            inputs, high_dim_labels, cat_labels = inputs.to(self.device), high_dim_labels.to(self.device), cat_labels.to(self.device)
             batch_size = len(inputs)
             yhat_rgr = self.forward(inputs) # forward pass
             yhat_cls = self.classify_predictions(yhat_rgr) # classify into predicted classes
