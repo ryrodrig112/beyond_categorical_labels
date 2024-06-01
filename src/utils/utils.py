@@ -282,7 +282,9 @@ class Trainer:
         print(f"batch print rate from run_training: {batch_print_rate}")
         for epoch in range(epochs):
             print(f"Beginning epoch {epoch + 1}")
-            train_loss, train_accuracy = self.model.train_one_epoch(self.trainloader, device=self.device, batch_print_rate=batch_print_rate)
+            train_loss, train_accuracy = self.model.train_one_epoch(self.trainloader,
+                                                                    device=self.device,
+                                                                    batch_print_rate=batch_print_rate)
             val_loss, val_accuracy = self.model.eval_performance(self.valloader, device=self.device)
             print(f"Epoch {epoch + 1}/{epochs}")
             print(f"Train Loss: {train_loss:.4f}, Validation Loss: {val_loss:.4f}")
