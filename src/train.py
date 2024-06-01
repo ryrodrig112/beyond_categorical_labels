@@ -138,10 +138,6 @@ def run_training(model_config_path, run_config_path):
     # Init model and data
     train_pcts = run_config["train_pct"]
     val_pct = run_config["val_pct"]
-
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(device)
-
     for train_pct in train_pcts:
         print(f"Training with {100 * train_pct}% of training data")
         for trial in range(num_trials):
@@ -159,9 +155,6 @@ def run_training(model_config_path, run_config_path):
                               results_dir,
                               device,
                               model_save_dir=model_dir)
-            if run_config.get("model_load_path"):
-                trainer.load_model(run_config["model_load_path"])
-
             print_run_info(trainer, model_config, print_rate)
             print(f"Batches in training set: {len(train_loader)}")
             print(f"Batches in validation set: {len(val_loader)}")
