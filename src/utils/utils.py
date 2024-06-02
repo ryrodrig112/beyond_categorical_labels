@@ -26,6 +26,8 @@ class Model:
         self.model_dir_suffix = model_dir_suffix
 
     def forward(self, x):
+        x.to(self.device)
+        self.network.to(self.device)
         return self.network(x)
 
     def count_parameters(self):

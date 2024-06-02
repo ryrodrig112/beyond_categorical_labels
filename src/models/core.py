@@ -107,6 +107,7 @@ class BaselineModel(nn.Module):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     def forward(self, data):
+        data.to(self.device)
         self.base_model.to(self.device)
         y = self.base_model(data)
         y = y.view(y.size(0), -1)
