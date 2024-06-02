@@ -1,1 +1,1 @@
-from .core import HighDimModel, CategoricalModel, BaselineModel
+from .core import HighDimModel, CategoricalModel, BaselineModel, W2VLabelModel

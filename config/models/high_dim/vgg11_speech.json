@@ -1,0 +1,13 @@
+{
+  "label_type": "speech",
+  "model_name": "vgg11",
+  "latent_size": 64,
+  "lr": 0.1,
+  "lr_decay": 0.1,
+  "lr_decay_schedule": [300, 450],
+  "optimizer_type": "sgd",
+  "momentum": 0.9,
+  "weight_decay": 0.0005,
+  "batch_size": 16,
+  "num_classes": 10
+}

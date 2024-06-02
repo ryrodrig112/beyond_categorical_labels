@@ -1,15 +1,16 @@
 {
-  "image_save_dir": "data/imgs/cifar10",
-  "cat_label_save_dir": "data/labels/categorical/",
-  "high_dim_label_path": "data/labels/high_dim/cifar10_speech.npy",
+  "image_save_dir": "../data/imgs/cifar10",
+  "cat_label_save_dir": "../data/labels/categorical/",
+  "speech_label_path": "../data/labels/high_dim/cifar10_speech.npy",
+  "w2v_label_path": "../data/labels/high_dim/cifar10_w2v.npy",
   "train_image_nm": "cifar10_train_img.npy",
   "test_image_nm": "cifar10_test_img.npy",
   "train_image_labels": "cifar10_training.npy",
   "test_image_labels": "cifar10_test.npy",
-  "train_pct": [0.2],
+  "train_pct": [0.1],
   "val_pct": 0.2,
   "logging_root": "../data/runs/data_constrained_high_dim",
   "print_pct": 0.25,
-  "num_epochs": 25,
+  "num_epochs": 1,
   "num_trials": 1
 }

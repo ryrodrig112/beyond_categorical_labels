@@ -1,6 +1,6 @@
 from src.utils import Model, Trainer, ClsModel, RgrModel
 from src.data import CIFAR10DLGetter, CIFAR10Extended
-from src.models import HighDimModel, CategoricalModel, BaselineModel
+from src.models import HighDimModel, CategoricalModel, BaselineModel, W2VLabelModel
 import torch
 import torch.nn as nn
 from torchvision import models
@@ -42,8 +42,11 @@ def config_model(config: dict, high_dim_label_set):
     device =  torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Init model based on label type
-    if label_type == "high_dim":
+    if label_type == "speech":
         network = HighDimModel(model_name, latent_size, num_classes)
+        loss_fn = nn.HuberLoss()
+    elif label_type == "w2v":
+        network = W2VLabelModel(model_name)
         loss_fn = nn.HuberLoss()
     else:
         # network = CategoricalModel(model_name, num_classes)
@@ -66,8 +69,10 @@ def config_model(config: dict, high_dim_label_set):
     model_dir_suffix = f"{model_name}_{label_type}"
     if label_type == "categorical":
         model = ClsModel(device, network, optimizer, loss_fn, scheduler, model_dir_suffix)
-    elif label_type == "high_dim":
+    elif label_type == "speech":
         model = RgrModel(device, network, optimizer, loss_fn,scheduler, high_dim_label_set, model_dir_suffix)
+    elif label_type == "w2v":
+        model = RgrModel(device, network, optimizer, loss_fn, scheduler, high_dim_label_set, model_dir_suffix)
 
     return model, batch_size
 
@@ -102,13 +107,20 @@ def load_datasets(run_config, model_config, train_pct):
 
     classes = ('Airplane', 'Automobile', 'Bird', 'Cat', 'Deer', 'Dog', 'Frog', 'Horse', 'Ship', 'Truck')
     label_map = {idx: label for idx, label in enumerate(classes)}
-    high_dim_label_path = run_config['high_dim_label_path']
+    speech_label_path = run_config['speech_label_path']
+    w2v_label_path = run_config['w2v_label_path']
+
+    if model_config.get("label_type") == "speech":
+        high_dim_label_path = speech_label_path
+    else:
+        high_dim_label_path = w2v_label_path
 
     cifar_data = CIFAR10DLGetter(train_pct,
                                  run_config['val_pct'],
                                  model_config['batch_size'],
                                  model_config['label_type'],
-                                 high_dim_label_path, label_map)
+                                 high_dim_label_path,
+                                 label_map)
 
     high_dim_label_set = cifar_data.high_dim_labels
 
@@ -164,31 +176,10 @@ def run_training(model_config_path, run_config_path, validation):
 
 if __name__ == "__main__":
     # Load run and model configuration
-    model_config_path = "../config/models/high_dim/vgg11_high_dim.json"
-    run_config_path = "../config/highdim_run_params_local.json"
-    model_config = load_config_file(model_config_path)
-    run_config = load_config_file(run_config_path)
-    num_trials = run_config.get("num_trials", 0)
+    model_config_path = "../config/models/high_dim/vgg11_w2v.json"
+    run_config_path = "../config/data_constrained_runs/local_run_params.json"
+    validation = False
 
-    # Init model and data
-    train_pcts = run_config["train_pct"]
-    val_pct = run_config["val_pct"]
-
-    for train_pct in train_pcts:
-        print(f"Training with {100 * train_pct}% of training data")
-        for trial in range(num_trials):
-            print(f"Trial #{trial+1}")
-            train_loader, val_loader, test_loader, high_dim_label_set = load_datasets(run_config, model_config, train_pct)
-            model, batch_size = config_model(model_config, high_dim_label_set)
-            print_rate = int((len(train_loader)) * run_config["print_pct"])
-            results_dir, model_dir = configure_logging(run_config, train_pct, trial)
-            trainer = Trainer(model, train_loader, val_loader, results_dir, model_save_dir=model_dir)
-            if run_config.get("model_load_path"):
-                trainer.load_model(run_config["model_load_path"])
-
-            print_run_info(trainer, model_config, print_rate)
-            print(f"Batches in training set: {len(train_loader)}")
-            print(f"Batches in validation set: {len(val_loader)}")
-            print(f"{len(val_loader.dataset)}")
-            # Run training
-            trainer.run_training(run_config["num_epochs"], batch_print_rate=print_rate)
+    trained_model, test_loader = run_training(model_config_path, run_config_path, validation)
+    loss, accuracy = trained_model.eval_performance(test_loader)
+    print(f"Accuracy = {accuracy}")

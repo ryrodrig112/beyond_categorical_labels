@@ -1,7 +1,6 @@
 {
-  "label_type": "high_dim",
+  "label_type": "w2v",
   "model_name": "vgg11",
-  "latent_size": 64,
   "lr": 0.1,
   "lr_decay": 0.1,
   "lr_decay_schedule": [300, 450],

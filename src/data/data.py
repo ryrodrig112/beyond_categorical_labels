@@ -87,7 +87,7 @@ class CIFAR10DLGetter: # use this to create data loaders
             self.train_dataset = CIFAR10(root='./data', train=True, download=True, transform=train_transform)
             self.val_dataset = CIFAR10(root='./data', train=True, download=True, transform=val_transform)
             self.test_dataset = CIFAR10(root='./data', train=False, download=True, transform=test_transform)
-        elif label_type == "high_dim":
+        else:
             self.train_dataset = CIFAR10Extended(high_dim_label_path, label_map, root='./data', train=True, download=True, transform=train_transform)
             self.val_dataset = CIFAR10Extended(high_dim_label_path, label_map, root='./data', train=True, download=True, transform=val_transform)
             self.test_dataset = CIFAR10Extended(high_dim_label_path, label_map, root='./data', train=False, download=True, transform=test_transform)
@@ -103,7 +103,7 @@ class CIFAR10DLGetter: # use this to create data loaders
         self.train_indices = indices[:train_size]
         self.val_indices = indices[train_size:train_size + val_size]
         self.high_dim_labels = None
-        if label_type == "high_dim":
+        if label_type != "categorical":
             self.high_dim_labels = np.load(high_dim_label_path)
 
 
