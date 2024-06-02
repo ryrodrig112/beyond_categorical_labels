@@ -104,8 +104,10 @@ class BaselineModel(nn.Module):
         self.base_model = base_model.features # need to edit about the base number of classes
         flatten_features = 512
         self.fc = nn.Linear(flatten_features, 10)
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     def forward(self, data):
+        self.base_model.to(self.device)
         y = self.base_model(data)
         y = y.view(y.size(0), -1)
         y = self.fc(y)
