@@ -109,16 +109,16 @@ class CIFAR10DLGetter: # use this to create data loaders
 
     def get_trainloader(self):
         train_subset = Subset(self.train_dataset, self.train_indices)
-        train_loader = DataLoader(train_subset, batch_size=self.batch_size, shuffle=True, num_workers=1, pin_memory=True)
+        train_loader = DataLoader(train_subset, batch_size=self.batch_size, shuffle=True, num_workers=0, pin_memory=True)
         return train_loader
 
     def get_valloader(self):
         val_subset = Subset(self.val_dataset, self.val_indices)
-        val_loader = DataLoader(val_subset, batch_size=self.batch_size, num_workers=1, pin_memory=True, shuffle=False)
+        val_loader = DataLoader(val_subset, batch_size=self.batch_size, num_workers=0, pin_memory=True, shuffle=False)
         return val_loader
 
     def get_testloader(self):
-        test_loader = DataLoader(self.test_dataset, batch_size=self.batch_size,num_workers=1, pin_memory=True, shuffle=False)
+        test_loader = DataLoader(self.test_dataset, batch_size=self.batch_size,num_workers=0, pin_memory=True, shuffle=False)
         return test_loader
 
 def main():
