@@ -55,7 +55,7 @@ class DeconvDecoder(nn.Module):
         return y_hat
 
 
-class HighDimModel(nn.Module):
+class HighDimModel(nn.Module): # works for all 64 x 64 outputs (Speech, BERT, High Dim)
     def __init__(self, model_name: nn.Module, latent_size: int, num_classes: int):
         super().__init__()
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -116,7 +116,7 @@ class BaselineModel(nn.Module):
         return y
 
 class W2VLabelModel(nn.Module):
-    def __init__(self, model_name: str, num_classes=10):
+    def __init__(self, model_name: str, out_size=300):
         super().__init__()
         if model_name == "vgg11":
             base_model = models.vgg11_bn()
@@ -129,6 +129,30 @@ class W2VLabelModel(nn.Module):
         self.base_model = base_model.features # need to edit about the base number of classes
         flatten_features = 512
         self.fc = nn.Linear(flatten_features, 300)
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    def forward(self, data):
+        data.to(self.device)
+        self.base_model.to(self.device)
+        y = self.base_model(data)
+        y = y.view(y.size(0), -1)
+        y = self.fc(y)
+        return y
+
+class GloveLabelModel(nn.Module):
+    def __init__(self, model_name: str, num_classes=10):
+        super().__init__()
+        if model_name == "vgg11":
+            base_model = models.vgg11_bn()
+        if model_name == "vgg13":
+            base_model = models.vgg13_bn()
+        if model_name == "vgg16":
+            base_model = models.vgg16_bn()
+        elif model_name == "vgg19":
+            base_model = models.vgg19_bn()
+        self.base_model = base_model.features # need to edit about the base number of classes
+        flatten_features = 512
+        self.fc = nn.Linear(flatten_features, 50)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     def forward(self, data):

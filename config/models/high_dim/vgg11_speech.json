@@ -1,5 +1,5 @@
 {
-  "label_type": "speech",
+  "label_type": "random",
   "model_name": "vgg11",
   "latent_size": 64,
   "lr": 0.1,

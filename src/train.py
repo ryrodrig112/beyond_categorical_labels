@@ -1,6 +1,6 @@
 from src.utils import Model, Trainer, ClsModel, RgrModel
 from src.data import CIFAR10DLGetter, CIFAR10Extended
-from src.models import HighDimModel, CategoricalModel, BaselineModel, W2VLabelModel
+from src.models import HighDimModel, CategoricalModel, BaselineModel, W2VLabelModel, GloveLabelModel
 import torch
 import torch.nn as nn
 from torchvision import models
@@ -42,11 +42,14 @@ def config_model(config: dict, high_dim_label_set):
     device =  torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Init model based on label type
-    if label_type == "speech":
+    if label_type in ["speech", "random","bert"]:
         network = HighDimModel(model_name, latent_size, num_classes)
         loss_fn = nn.HuberLoss()
     elif label_type == "w2v":
         network = W2VLabelModel(model_name)
+        loss_fn = nn.HuberLoss()
+    elif label_type == "glove":
+        network = GloveLabelModel(model_name)
         loss_fn = nn.HuberLoss()
     else:
         # network = CategoricalModel(model_name, num_classes)
@@ -69,9 +72,7 @@ def config_model(config: dict, high_dim_label_set):
     model_dir_suffix = f"{model_name}_{label_type}"
     if label_type == "categorical":
         model = ClsModel(device, network, optimizer, loss_fn, scheduler, model_dir_suffix)
-    elif label_type == "speech":
-        model = RgrModel(device, network, optimizer, loss_fn,scheduler, high_dim_label_set, model_dir_suffix)
-    elif label_type == "w2v":
+    else:
         model = RgrModel(device, network, optimizer, loss_fn, scheduler, high_dim_label_set, model_dir_suffix)
 
     return model, batch_size
@@ -107,13 +108,18 @@ def load_datasets(run_config, model_config, train_pct):
 
     classes = ('Airplane', 'Automobile', 'Bird', 'Cat', 'Deer', 'Dog', 'Frog', 'Horse', 'Ship', 'Truck')
     label_map = {idx: label for idx, label in enumerate(classes)}
-    speech_label_path = run_config['speech_label_path']
-    w2v_label_path = run_config['w2v_label_path']
+    high_dim_labels = {
+        "speech": run_config['speech_label_path'],
+        "w2v": run_config['w2v_label_path'],
+        "random": run_config['random_label_path'],
+        "glove": run_config['glove_label_path'],
+        "bert": run_config['bert_label_path']
+    }
 
-    if model_config.get("label_type") == "speech":
-        high_dim_label_path = speech_label_path
+    if model_config.get("label_type") == "categorical":
+        high_dim_label_path = high_dim_labels['speech']
     else:
-        high_dim_label_path = w2v_label_path
+        high_dim_label_path = high_dim_labels[model_config.get("label_type")]
 
     cifar_data = CIFAR10DLGetter(train_pct,
                                  run_config['val_pct'],
@@ -176,7 +182,7 @@ def run_training(model_config_path, run_config_path, validation):
 
 if __name__ == "__main__":
     # Load run and model configuration
-    model_config_path = "../config/models/high_dim/vgg11_w2v.json"
+    model_config_path = "../config/models/high_dim/vgg11_random.json"
     run_config_path = "../config/data_constrained_runs/local_run_params.json"
     validation = False
 

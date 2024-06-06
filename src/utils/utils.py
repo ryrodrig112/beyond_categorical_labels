@@ -10,7 +10,6 @@ from tensorboard.backend.event_processing import event_accumulator
 from tensorboard.backend.event_processing import event_accumulator
 import pandas as pd
 from pathlib import Path
-from src.data import CIFAR10Extended
 
 class Model:
     def __init__(self, device, network: nn.Module,
@@ -35,6 +34,7 @@ class Model:
 
     def train_one_epoch(self, trainloader, device, batch_print_rate=0):
         ...
+
 
 class RgrModel(Model):
     def __init__(self, device, network: nn.Module,
@@ -89,7 +89,7 @@ class RgrModel(Model):
             # get the inputs; data is a list of [inputs, high_dim_label, categorical_label]
             inputs, high_dim_labels, cat_labels = data
             inputs, high_dim_labels, cat_labels = inputs.to(self.device), \
-                                                  high_dim_labels.to(self.device), \
+                                                  high_dim_labels.float().to(self.device), \
                                                   cat_labels.to(self.device)
             batch_size = len(inputs)
             yhat_rgr = self.forward(inputs) # forward pass
@@ -97,6 +97,7 @@ class RgrModel(Model):
 
             #calculate loss & accuracy for batch, track for epoch
             loss = self.loss_fn(yhat_rgr, high_dim_labels)
+
             num_accurate, _ = self.calc_cls_accuracy(yhat_cls, cat_labels)
 
             epoch_loss += loss.item()
@@ -268,7 +269,6 @@ class Trainer:
             print(f"Beginning epoch {epoch + 1}")
             train_loss, train_accuracy = self.model.train_one_epoch(self.trainloader,
                                                                     batch_print_rate=batch_print_rate)
-            ...
             if validation:
                 val_loss, val_accuracy = self.model.eval_performance(self.valloader)
                 self.writer.add_scalars('Loss', {'Train': train_loss, 'Validation': val_loss}, epoch)
